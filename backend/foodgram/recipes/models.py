@@ -49,7 +49,8 @@ class Ingredient(models.Model):
         max_length=200
         )
     amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество'
+        verbose_name='Количество',
+        null=True
     )
     measurement_unit = models.CharField(
         'Единицы измерения',
