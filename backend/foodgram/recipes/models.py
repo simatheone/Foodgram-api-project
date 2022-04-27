@@ -189,7 +189,10 @@ class RecipeTag(models.Model):
 
 
 class Favorite(models.Model):
-    """Favorite model."""
+    """
+    Favorite model.
+    Chained models: User, Recipe
+    """
 
     user = models.ForeignKey(
         CustomUser,
