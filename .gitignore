@@ -131,5 +131,10 @@ dmypy.json
 # .idea
 .idea
 
+# Media and static files
 
+media/
+static/
+
+# Personal notes
 todo.txt
