@@ -85,7 +85,7 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         'Картинка блюда',
-        upload_to='recipes/images/',
+        upload_to='images/',
     )
     text = models.TextField(
         'Текстовое описание рецепта'
