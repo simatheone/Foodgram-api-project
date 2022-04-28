@@ -91,6 +91,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 2,
 }
 
 STATIC_URL = 'static/'
@@ -100,6 +106,17 @@ STATIC_ROOT = BASE_DIR.joinpath('static')
 MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR.joinpath('media')
+
+DJOSER = {
+    'SERIALIZERS': {
+        'user': 'api.serializers.CustomUserSerializer',
+        },
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.IsAuthenticated'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        },
+    'HIDE_USERS': False
+}
 
 LANGUAGE_CODE = 'en-us'
 
