@@ -26,7 +26,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author')
+    list_display = ('name', 'author', 'count_recipe_in_favorites')
     list_filter = ('name', 'author', 'tag')
     search_fields = ('name', 'author')
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
