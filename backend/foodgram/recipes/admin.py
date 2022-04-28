@@ -32,8 +32,13 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
 
     def count_recipe_in_favorites(self, obj):
-        result = Favorite.objects.annotate(recipe=Count('recipe'))
-        return len(result)
+        """
+        Count function.
+        Function counts how many times recipe has been added
+        in favorite list.
+        """
+        result = Favorite.objects.aggregate(count_recipe=Count(obj.id))
+        return result['count_recipe']
 
 
 @admin.register(RecipeIngredient)
