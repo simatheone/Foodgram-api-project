@@ -46,8 +46,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed'
+            'password', 'is_subscribed'
         )
+        extra_kwargs = {'password': {'write_only': True}}
 
     def get_is_subscribed(self, obj):
         user= self.context['request'].user
@@ -83,21 +84,6 @@ class Base64ImageField(serializers.ImageField):
         return extension
 
 
-class TagsListingField(serializers.RelatedField):
-    def to_internal_value(self, data):
-        tag = get_object_or_404(Tag, pk=data)
-        return tag
-
-    def to_representation(self, value):
-        data_tag = {
-            'id': value.id,
-            'name': value.name,
-            'color': value.color,
-            'slug': value.slug 
-        }
-        return data_tag
-
-
 class IngredientAmountSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientAmount
@@ -109,6 +95,15 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
                 message='Нельзя добавить одниковые ингредиента с одинаковым количеством.'
             )
         ]
+
+    def create(self, validated_data):
+        ingredient_id = validated_data.get('id')
+        amount = validated_data.get('amount')
+        ingredient = Ingredient.objects.get(pk=ingredient_id)
+        ingredient_amount = IngredientAmount.objects.create(
+            ingredient=ingredient, amount=amount
+        )
+        return ingredient_amount
 
     def to_internal_value(self, data):
         ingredient_id = data.get('id')
@@ -140,18 +135,10 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Serializer for RecipeViewSet."""
     author = CustomUserSerializer(read_only=True)
-    tags = TagsListingField(
-        queryset=Tag.objects.all(), many=True, required=True
-    )
-    tag = TagSerializer(many=True)
+    tags = TagSerializer(many=True)
     ingredients = IngredientAmountSerializer(
-        many=True, required=True
+        many=True
     )
-    # queryset=IngredientAmount.objects.all(), 
-
-    # ingredients = IngredientAmountSerializer(
-    #     many=True, required=True
-    # )
     image = Base64ImageField(
         max_length=None, use_url=True, required=True
     )
@@ -198,8 +185,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                 tag=tag, recipe=recipe
             )
         for ingredient in ingredients:
-            ingredient_id = ingredient['id']
-            amount = ingredient['amount']
+            ingredient_id = ingredient.get('id')
+            amount = ingredient.get('amount')
             RecipeIngredient.objects.create(
                 recipe=recipe, ingredient_id=ingredient_id
             )
@@ -207,6 +194,9 @@ class RecipeSerializer(serializers.ModelSerializer):
                 ingredient_id=ingredient_id, amount=amount
             )
         return recipe
+    
+    def update(self, instance, validated_data):
+        pass
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -284,13 +274,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        print('CREATE VALIDATED DATA !!!!!!!!!!!')
-        print(validated_data)
         return Subscription.objects.create(**validated_data)
 
     def get_recipes_count(self, obj):
-        print('get_recipes_count HERE!!!!!!!!!!!!!!!!')
-        print(obj)
         """
         Method field.
         Method returns the count of the author's recipes.
@@ -299,3 +285,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             count_recipes=Count('name')
         )
         return results['count_recipes']
+
+    # def to_representation(self, instance):
+        # print(type(instance))
+        # <class 'users.models.Subscription'>
+        # print(instance)
+        # JeremmyK подписался на simatheone
+
+# 1/subscribe/

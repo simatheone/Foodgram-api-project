@@ -3,8 +3,8 @@ from django.db.models import Count
 
 from foodgram.settings import EMPTY_VALUE_ADMIN_PANEL
 from .models import (
-    Favorite, Ingredient, Recipe, RecipeIngredient,
-    RecipeTag, ShoppingCart, Tag
+    Favorite, Ingredient, Recipe, IngredientAmount,
+    RecipeIngredient, RecipeTag, ShoppingCart, Tag
 )
 
 
@@ -24,10 +24,20 @@ class IngredientAdmin(admin.ModelAdmin):
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
 
 
+@admin.register(IngredientAmount)
+class IngredientAmountAdmin(admin.ModelAdmin):
+    list_display = ('ingredient', 'amount')
+    list_display_links = ('ingredient',)
+    list_filter = ('ingredient',)
+    list_editable = ('amount',)
+    search_fields = ('ingredient',)
+    empty_value_display = EMPTY_VALUE_ADMIN_PANEL
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'count_recipe_in_favorites')
-    list_filter = ('name', 'author', 'tag')
+    list_filter = ('name', 'author', 'tags')
     search_fields = ('name', 'author')
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
 

@@ -48,10 +48,6 @@ class Ingredient(models.Model):
         'Ингридиент',
         max_length=200
         )
-    amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество',
-        null=True
-    )
     measurement_unit = models.CharField(
         'Единицы измерения',
         max_length=200
@@ -66,9 +62,39 @@ class Ingredient(models.Model):
                 fields=['name'], name='ingredient_name_idx'
             )
         ]
+        constraints = [
+            UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_name_with_measurement_unit'
+            ),
+        ]
 
     def __str__(self):
         return self.name[:MAX_LEN_REPR]
+
+
+class IngredientAmount(models.Model):
+    """
+    Model IngredientAmount.
+    Connects with Ingredient model.
+    """
+
+    ingredient = models.ForeignKey(
+        Ingredient,
+        related_name='ingredient_amount',
+        on_delete=models.CASCADE
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество'
+    )
+
+    class Meta:
+        db_table = 'ingredient_amount'
+        verbose_name = 'Ингредиент-количество'
+        verbose_name_plural = 'Ингредиенты-количества'
+
+    def __str__(self):
+        return str(self.amount)
 
 
 class Recipe(models.Model):
@@ -85,18 +111,18 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         'Картинка блюда',
-        upload_to='images/',
+        upload_to='recipes/images/',
     )
     text = models.TextField(
         'Текстовое описание рецепта'
     )
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         related_name='recipe_ingredient',
         through='RecipeIngredient',
         verbose_name='Ингредиент'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         related_name='recipe_tag',
         through='RecipeTag',
@@ -105,11 +131,16 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления'
     )
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
 
     class Meta:
         db_table = 'recipe'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ('-pub_date',)
         indexes = [
             models.Index(
                 fields=['name'], name='recipe_name_idx'

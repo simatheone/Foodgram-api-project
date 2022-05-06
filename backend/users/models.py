@@ -56,7 +56,7 @@ class CustomUser(AbstractUser):
         ]
 
     def __str__(self):
-        return f'Пользователь {self.username}'
+        return self.username
 
 
 class Subscription(models.Model):
