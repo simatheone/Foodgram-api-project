@@ -65,12 +65,18 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         CustomUser,
         related_name='sub_user',
-        on_delete=CASCADE
+        on_delete=CASCADE,
+        verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         CustomUser,
         related_name='sub_author',
-        on_delete=CASCADE
+        on_delete=CASCADE,
+        verbose_name='Автор'
+    )
+    subscribe_date = models.DateTimeField(
+        'Дата подписки',
+        auto_now_add=True,
     )
 
     class Meta:

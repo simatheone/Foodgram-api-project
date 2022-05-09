@@ -73,25 +73,38 @@ class Ingredient(models.Model):
         return self.name[:MAX_LEN_REPR]
 
 
-class IngredientAmount(models.Model):
+class RecipeIngredientAmount(models.Model):
     """
-    Model IngredientAmount.
+    Model RecipeIngredientAmount.
     Connects with Ingredient model.
     """
 
     ingredient = models.ForeignKey(
         Ingredient,
-        related_name='ingredient_amount',
-        on_delete=models.CASCADE
+        related_name='ingredient',
+        on_delete=models.CASCADE,
+        verbose_name='Игредиент'
+    )
+    recipe = models.ForeignKey(
+        'Recipe',
+        related_name='recipe',
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт'
     )
     amount = models.PositiveSmallIntegerField(
+        default=1,
         verbose_name='Количество'
     )
 
     class Meta:
-        db_table = 'ingredient_amount'
-        verbose_name = 'Ингредиент-количество'
-        verbose_name_plural = 'Ингредиенты-количества'
+        db_table = 'ingredient_amount_recipe'
+        verbose_name = 'Ингредиент количество'
+        verbose_name_plural = 'Ингредиенты количество'
+        constraints = [
+            UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_ingredient_for_recipe')
+            ]
 
     def __str__(self):
         return str(self.amount)
@@ -102,6 +115,7 @@ class Recipe(models.Model):
 
     author = models.ForeignKey(
         CustomUser,
+        related_name='recipe',
         on_delete=models.SET_NULL,
         null=True
     )
@@ -118,17 +132,17 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        related_name='recipe_ingredient',
-        through='RecipeIngredient',
+        related_name='recipes',
+        through='RecipeIngredientAmount',
         verbose_name='Ингредиент'
     )
     tags = models.ManyToManyField(
         Tag,
-        related_name='recipe_tag',
-        through='RecipeTag',
+        related_name='recipes',
         verbose_name='Тэг'
     )
     cooking_time = models.PositiveSmallIntegerField(
+        default=1,
         verbose_name='Время приготовления'
     )
     pub_date = models.DateTimeField(
@@ -154,97 +168,28 @@ class Recipe(models.Model):
         return self.name[:MAX_LEN_REPR]
 
 
-class RecipeIngredient(models.Model):
-    """
-    Model though which the m2m relationship was established.
-    Chained models: Recipe, Ingredient.
-    """
-
-    recipe = models.ForeignKey(
-        Recipe,
-        related_name='recipes',
-        on_delete=models.SET_NULL,
-        null=True
-    )
-    ingredient = models.ForeignKey(
-        Ingredient,
-        related_name='ingredients',
-        on_delete=models.SET_NULL,
-        null=True
-    )
-
-    class Meta:
-        db_table='recipe_ingredient'
-        verbose_name = 'Рецепт-ингредиент'
-        constraints = [
-            UniqueConstraint(
-                fields=['recipe', 'ingredient'], name='unique_ingredient_for_recipe'
-            ),
-        ]
-
-    def __str__(self):
-        return (f'В рецепт: {self.recipe}' 
-               ' добавлен игредиент: {self.ingredient}')
-
-
-class RecipeTag(models.Model):
-    """
-    Model though which the m2m relationship was established.
-    Chained models: Recipe, Tag.
-    """
-
-    recipe = models.ForeignKey(
-        Recipe,
-        related_name='recipe',
-        on_delete=models.SET_NULL,
-        null=True
-    )
-    tag = models.ForeignKey(
-        Tag,
-        related_name='tag',
-        null=True,
-        on_delete=models.SET_NULL
-    )
-
-    class Meta:
-        db_table='recipe_tag'
-        verbose_name = 'Рецепт-тэг'
-        constraints = [
-            UniqueConstraint(
-                fields=['recipe', 'tag'], name='unique_tag_for_recipe'
-            ),
-        ]
-
-    def __str__(self):
-        return f'К рецепту: {self.recipe} добавлен тег: {self.tag}'
-
-
 class Favorite(models.Model):
     """
     Favorite model.
     Chained models: User, Recipe
     """
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         CustomUser,
-        related_name='favorite_user',
-        on_delete=models.CASCADE
+        related_name='favorite_recipe',
+        on_delete=models.CASCADE,
+        verbose_name='Юзер'
     )
-    recipe = models.ForeignKey(
+    recipe = models.ManyToManyField(
         Recipe,
         related_name='favorite_recipe',
-        on_delete=models.CASCADE
+        verbose_name='Понравившийся рецепт'
     )
 
     class Meta:
         db_table='favorite'
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
-        constraints = [
-            UniqueConstraint(
-                fields=['user', 'recipe'], name='unique_favorite_recipe'
-            ),
-        ]
 
     def __str__(self):
         return f'{self.user} добавил(-а) в избранное {self.recipe}'
@@ -256,25 +201,21 @@ class ShoppingCart(models.Model):
     Chained models: User, Recipe
     """
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         CustomUser,
-        related_name='cart_user',
-        on_delete=models.CASCADE
+        related_name='shopping_cart',
+        on_delete=models.CASCADE,
+        verbose_name='Юзер'
     )
-    recipe = models.ForeignKey(
+    recipe = models.ManyToManyField(
         Recipe,
-        related_name='cart_recipe',
-        on_delete=models.CASCADE
+        related_name='shopping_cart',
+        verbose_name='Рецепты для покупок'
     )
 
     class Meta:
         db_table='shopping_cart'
         verbose_name = 'Список покупок'
-        constraints = [
-            UniqueConstraint(
-                fields=['user', 'recipe'], name='unique_recipe_for_user_in_the_cart'
-            ),
-        ]
 
     def __str__(self):
         return f'{self.user} добавил(-а) рецепт: {self.recipe}'
