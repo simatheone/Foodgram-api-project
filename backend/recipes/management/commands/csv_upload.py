@@ -17,7 +17,7 @@ action = {
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        path = str(BASE_DIR.parent.parent.joinpath('data').resolve()) + '/'
+        path = str(BASE_DIR.parent.joinpath('data').resolve()) + '/'
         for key in action:
             with open(path + key, 'r', encoding='utf-8') as file:
                 reader = csv.reader(file)
