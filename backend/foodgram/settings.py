@@ -133,3 +133,5 @@ MAX_LEN_REPR = 30
 IMAGE_NAME_LEN = 12
 
 EMPTY_VALUE_ADMIN_PANEL = '-empty-'
+
+SHOPPING_CART_FILENAME = 'user-shopping-cart.pdf'
