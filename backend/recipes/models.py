@@ -4,7 +4,6 @@ from django.db.models import UniqueConstraint
 
 from foodgram.settings import MAX_LEN_REPR
 
-
 CustomUser = get_user_model()
 
 
@@ -174,20 +173,21 @@ class Favorite(models.Model):
     Chained models: User, Recipe
     """
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         CustomUser,
         related_name='favorite_recipe',
         on_delete=models.CASCADE,
         verbose_name='Юзер'
     )
-    recipe = models.ManyToManyField(
+    recipe = models.ForeignKey(
         Recipe,
         related_name='favorite_recipe',
+        on_delete=models.CASCADE,
         verbose_name='Понравившийся рецепт'
     )
 
     class Meta:
-        db_table='favorite'
+        db_table = 'favorite'
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
 
@@ -201,15 +201,16 @@ class ShoppingCart(models.Model):
     Chained models: User, Recipe
     """
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         CustomUser,
         related_name='shopping_cart',
         on_delete=models.CASCADE,
         verbose_name='Юзер'
     )
-    recipe = models.ManyToManyField(
+    recipe = models.ForeignKey(
         Recipe,
         related_name='shopping_cart',
+        on_delete=models.CASCADE,
         verbose_name='Рецепты для покупок'
     )
 
