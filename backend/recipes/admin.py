@@ -24,17 +24,10 @@ class RecipeIngredientAmountAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'get_recipes')
+    list_display = ('id', 'user', 'recipe')
     list_filter = ('id', 'user')
     search_fields = ('user',)
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
-
-    @admin.display(description='Рецепты')
-    def get_recipes(self, obj):
-        recipes = [
-            recipe.name for recipe in obj.recipe.all()
-        ]
-        return ', '.join(recipes)
 
 
 @admin.register(Ingredient)
@@ -82,17 +75,10 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'get_recipe')
+    list_display = ('id', 'user', 'recipe')
     list_filter = ('user', 'recipe')
     search_fields = ('user', 'recipe')
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
-
-    @admin.display(description='Рецепты в списке покупок')
-    def get_recipe(self, obj):
-        recipes = [
-            recipe.name for recipe in obj.recipe.all()
-        ]
-        return ', '.join(recipes)
 
 
 @admin.register(Tag)
