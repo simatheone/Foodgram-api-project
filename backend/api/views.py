@@ -196,7 +196,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
 
 
-class FavoriteAPIView(generics.ListCreateAPIView,
+class FavoriteAPIView(generics.CreateAPIView,
                       generics.DestroyAPIView):
     """FavoriteApiView for Favorite model."""
     serializer_class = ShortRecipeSerializer
@@ -208,7 +208,7 @@ class FavoriteAPIView(generics.ListCreateAPIView,
         self.check_object_permissions(self.request, recipe)
         return recipe
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         recipe_obj = self.get_queryset()
         user = request.user
         if Favorite.objects.filter(user=user, recipe=recipe_obj).exists():
@@ -233,7 +233,7 @@ class FavoriteAPIView(generics.ListCreateAPIView,
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ShoppingCartAPIView(generics.ListCreateAPIView,
+class ShoppingCartAPIView(generics.CreateAPIView,
                           generics.DestroyAPIView):
     """Shopping cart ApiView for ShoppingCart model."""
     serializer_class = ShortRecipeSerializer
@@ -245,7 +245,7 @@ class ShoppingCartAPIView(generics.ListCreateAPIView,
         self.check_object_permissions(self.request, recipe)
         return recipe
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         recipe_obj = self.get_queryset()
         user = request.user
         if ShoppingCart.objects.filter(user=user, recipe=recipe_obj).exists():
