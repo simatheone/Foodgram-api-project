@@ -1,5 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
-
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 from users.models import USER_ROLE_ADMIN
 
 
@@ -13,8 +12,9 @@ class IsAdminOrReadOnly(BasePermission):
         return request.method in SAFE_METHODS or (
             request.user.is_authenticated
             and (request.user.is_superuser
-            or reuqest.user.role == USER_ROLE_ADMIN)
-        )
+                 or request.user.role == USER_ROLE_ADMIN)
+            )
+
 
 class IsOwnerAdminOrReadOnly(BasePermission):
     """
@@ -34,6 +34,3 @@ class IsOwnerAdminOrReadOnly(BasePermission):
             or request.user.role == USER_ROLE_ADMIN
             or request.user.is_superuser
         )
-
-class IsAdminOrOwner(BasePermission):
-    pass
