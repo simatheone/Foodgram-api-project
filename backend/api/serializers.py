@@ -1,21 +1,18 @@
-from drf_base64.fields import Base64ImageField
-from django.shortcuts import get_object_or_404
-from django.core.files.base import ContentFile
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
+from drf_base64.fields import Base64ImageField
+from recipes.models import Ingredient, Recipe, RecipeIngredientAmount, Tag
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-
-from recipes.models import(
-    Favorite, Ingredient, Recipe,
-    RecipeIngredientAmount, ShoppingCart, Tag
-)
 from users.models import CustomUser, Subscription
-from foodgram.settings import IMAGE_NAME_LEN
 
 
 class IsSubscribedMethod:
 
     def get_is_subscribed(self, obj):
+        # print(obj.username)
+        # print(type(obj))
+        # <class 'users.models.Subscription'>
+        # TestUser2 подписался на simatheone
         user = self.context['request'].user
         if user.is_authenticated:
             return user.sub_user.filter(author=obj).exists()
@@ -90,7 +87,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class AuthorForRecipeSerializer(serializers.ModelSerializer,
                                 IsSubscribedMethod):
     """
-    Serializes the author of recipe. 
+    Serializes the author of recipe.
     Uses in RecipeReadSerializer.
     """
     is_subscribed = serializers.SerializerMethodField(
@@ -159,7 +156,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = (
             'id', 'tags', 'author', 'ingredients',
-            'name', 'image', 'text', 'cooking_time',  
+            'name', 'image', 'text', 'cooking_time'
         )
         read_only_fields = ('id', 'author')
 
@@ -190,7 +187,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         if 'ingredients' in validated_data:
             ingredients = validated_data.pop('ingredients')
             instance.ingredients.clear()
-        
+
         if 'tags' in validated_data:
             tags = validated_data.pop('tags')
             instance.tags.clear()
@@ -222,7 +219,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 f'Данный рецепт "{recipe_name}" уже существует.'
             )
-        ingredients = data['ingredients']
         return data
 
     def validate_ingredients(self, value):
@@ -233,7 +229,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         for ingredient in value:
             ingredient_obj = get_object_or_404(
-                Ingredient, pk=ingredient['id'] 
+                Ingredient, pk=ingredient['id']
             )
             if ingredient_obj in ingredients_in_recipe:
                 raise serializers.ValidationError(
@@ -278,7 +274,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
+class SubscriptionSerializer(serializers.ModelSerializer, IsSubscribedMethod):
     """
     Serializer for Subscription.
     """
@@ -287,6 +283,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
+    # is_subscribed = serializers.SerializerMethodField(
+    #     read_only=True
+    # )
     is_subscribed = serializers.BooleanField(read_only=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -306,7 +305,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         request = self.context['request']
         recipe_limit = request.GET.get('recipes_limit')
         if recipe_limit:
-            recipes = obj.author.recipe.all()[:int(recipe_limit)] 
+            recipes = obj.author.recipe.all()[:int(recipe_limit)]
         else:
             recipes = obj.author.recipe.all()
         serializer = ShortRecipeSerializer(

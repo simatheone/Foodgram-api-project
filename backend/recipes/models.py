@@ -215,8 +215,8 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        db_table='shopping_cart'
+        db_table = 'shopping_cart'
         verbose_name = 'Список покупок'
 
     def __str__(self):
-        return f'{self.user} добавил(-а) рецепт: {self.recipe}'
+        return f'{self.user} добавил(-а) в покупки рецепт: {self.recipe}'

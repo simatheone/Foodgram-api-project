@@ -32,7 +32,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         'Электронная почта',
         max_length=254,
-        unique=True, 
+        unique=True,
     )
     role = models.CharField(
         'Роль',
@@ -80,7 +80,7 @@ class Subscription(models.Model):
     )
 
     class Meta:
-        db_table='subscription'
+        db_table = 'subscription'
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
