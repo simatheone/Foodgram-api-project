@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.db.models import Count
 
 from foodgram.settings import EMPTY_VALUE_ADMIN_PANEL
 from .models import (
@@ -43,7 +42,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'author', 'get_ingredients',
         'get_tags', 'get_count_recipe_in_favorites',
-        
+
     )
     list_filter = ('name', 'author', 'tags')
     list_display_links = ('name',)
