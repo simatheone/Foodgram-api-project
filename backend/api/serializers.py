@@ -9,13 +9,14 @@ from users.models import CustomUser, Subscription
 class IsSubscribedMethod:
 
     def get_is_subscribed(self, obj):
-        # print(obj.username)
-        # print(type(obj))
-        # <class 'users.models.Subscription'>
-        # TestUser2 подписался на simatheone
+        """
+        Method checks if user is a subscriber of an author.
+        """
         user = self.context['request'].user
         if user.is_authenticated:
-            return user.sub_user.filter(author=obj).exists()
+            if isinstance(obj, CustomUser):
+                return user.sub_user.filter(author=obj).exists()
+            return True
         return False
 
 
@@ -283,10 +284,9 @@ class SubscriptionSerializer(serializers.ModelSerializer, IsSubscribedMethod):
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
-    # is_subscribed = serializers.SerializerMethodField(
-    #     read_only=True
-    # )
-    is_subscribed = serializers.BooleanField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField(
+        read_only=True
+    )
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 

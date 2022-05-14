@@ -1,6 +1,5 @@
 import io
 
-from django.db.models import Value
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
@@ -71,9 +70,7 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = self.request.user
-        queryset = user.sub_user.annotate(
-                is_subscribed=Value(True)
-            )
+        queryset = user.sub_user.all()
         serializer = SubscriptionSerializer(
             queryset, many=True, context={'request': request}
         )
