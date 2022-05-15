@@ -9,7 +9,6 @@ CustomUser = get_user_model()
 
 class Tag(models.Model):
     """Tag model."""
-
     name = models.CharField(
         'Название',
         max_length=200,
@@ -22,7 +21,6 @@ class Tag(models.Model):
     )
     slug = models.SlugField(
         'Слаг',
-        max_length=200,
         unique=True
     )
 
@@ -32,7 +30,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Тэги'
         indexes = [
             models.Index(
-                fields=['name'], name='tag_name_idx'
+                fields=('name',), name='tag_name_idx'
             )
         ]
 
@@ -42,7 +40,6 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     """Ingredient model."""
-
     name = models.CharField(
         'Ингридиент',
         max_length=200
@@ -58,12 +55,12 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
         indexes = [
             models.Index(
-                fields=['name'], name='ingredient_name_idx'
+                fields=('name',), name='ingredient_name_idx'
             )
         ]
         constraints = [
             UniqueConstraint(
-                fields=['name', 'measurement_unit'],
+                fields=('name', 'measurement_unit'),
                 name='unique_name_with_measurement_unit'
             ),
         ]
@@ -77,7 +74,6 @@ class RecipeIngredientAmount(models.Model):
     Model RecipeIngredientAmount.
     Connects with Ingredient model.
     """
-
     ingredient = models.ForeignKey(
         Ingredient,
         related_name='ingredient',
@@ -101,7 +97,7 @@ class RecipeIngredientAmount(models.Model):
         verbose_name_plural = 'Ингредиенты количество'
         constraints = [
             UniqueConstraint(
-                fields=['recipe', 'ingredient'],
+                fields=('recipe', 'ingredient'),
                 name='unique_ingredient_for_recipe')
             ]
 
@@ -111,7 +107,6 @@ class RecipeIngredientAmount(models.Model):
 
 class Recipe(models.Model):
     """Recipe model."""
-
     author = models.ForeignKey(
         CustomUser,
         related_name='recipe',
@@ -156,10 +151,10 @@ class Recipe(models.Model):
         ordering = ('-pub_date',)
         indexes = [
             models.Index(
-                fields=['name'], name='recipe_name_idx'
+                fields=('name',), name='recipe_name_idx'
             ),
             models.Index(
-                fields=['author'], name='recipe_author_idx'
+                fields=('author',), name='recipe_author_idx'
             )
         ]
 
@@ -172,7 +167,6 @@ class Favorite(models.Model):
     Favorite model.
     Chained models: User, Recipe
     """
-
     user = models.ForeignKey(
         CustomUser,
         related_name='favorite_recipe',
@@ -200,7 +194,6 @@ class ShoppingCart(models.Model):
     Shopping Cart model.
     Chained models: User, Recipe
     """
-
     user = models.ForeignKey(
         CustomUser,
         related_name='shopping_cart',
