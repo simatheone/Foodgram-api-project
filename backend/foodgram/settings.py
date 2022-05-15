@@ -124,6 +124,8 @@ MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR.joinpath('media')
 
+USE_X_FORWARDED_HOST = True
+
 DJOSER = {
     'SERIALIZERS': {
         'user': 'api.serializers.CustomUserSerializer',
@@ -134,6 +136,7 @@ DJOSER = {
         },
     'HIDE_USERS': False
 }
+
 
 LANGUAGE_CODE = 'ru'
 
