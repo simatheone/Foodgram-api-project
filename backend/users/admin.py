@@ -6,6 +6,7 @@ from .models import CustomUser, Subscription
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
+    """Admin panel for Subscription model."""
     list_display = ('id', 'user', 'author', 'subscribe_date')
     search_fields = ('user__username', 'author__username')
     empty_value_display = EMPTY_VALUE_ADMIN_PANEL
@@ -13,6 +14,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
+    """Admin panel for CustomUser model."""
     list_display = (
         'id', 'username', 'email', 'first_name',
         'last_name', 'password', 'role',

@@ -1,8 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CheckConstraint, F, UniqueConstraint, Q
+from django.db import models
+from django.db.models import CheckConstraint, F, Q, UniqueConstraint
 from django.db.models.deletion import CASCADE
-
 
 USER_ROLE_USER = 'user'
 USER_ROLE_ADMIN = 'admin'
@@ -15,7 +14,6 @@ USER_ROLE_CHOICES = (
 
 class CustomUser(AbstractUser):
     """CustomUser model."""
-
     username = models.CharField(
         'username',
         max_length=150,
@@ -61,7 +59,6 @@ class CustomUser(AbstractUser):
 
 class Subscription(models.Model):
     """Subscription model."""
-
     user = models.ForeignKey(
         CustomUser,
         related_name='sub_user',
@@ -85,7 +82,7 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
         constraints = [
             UniqueConstraint(
-                fields=['user', 'author'], name='unique_subscription'
+                fields=('user', 'author'), name='unique_subscription'
             ),
             CheckConstraint(check=~Q(user=F('author')),
                             name='user_cant_follow_himself'),
