@@ -1,5 +1,7 @@
 import io
 
+from django.conf.settings import SHOPPING_CART_FILENAME
+from django.http import FileResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -41,7 +43,7 @@ def get_ingredients(recipes_list):
     """
     Function returns a list with lists of ingredients.
     Some ingredients could be repeated.
-    List schema example: 
+    List schema example:
         [
             [str: potato, int: 2, str: kg.],
             [str: lemon, int: 2, str: pieces],
