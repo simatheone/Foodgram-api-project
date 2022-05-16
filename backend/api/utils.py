@@ -1,7 +1,5 @@
 import io
 
-from django.conf.settings import SHOPPING_CART_FILENAME
-from django.http import FileResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -72,7 +70,7 @@ def create_pdf_shopping_cart(user):
     Function returns FileResponse (PDF File for downloading).
     If recipe/recipes have been added to shopping cart
     PDF would be filled with unique ingredients with its
-    amount and mesurement units.
+    amounts and mesurement units.
     Otherwise it will be written 'Shopping cart is empty'.
     """
     buffer = io.BytesIO()
@@ -106,18 +104,10 @@ def create_pdf_shopping_cart(user):
             y_value -= 30
         pdf_page.save()
         buffer.seek(0)
-        return FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
-        )
+        return buffer
     else:
         pdf_page.drawCentredString(315, 425, EMPTY_CART_TITLE)
         pdf_page.showPage()
         pdf_page.save()
         buffer.seek(0)
-        return FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
-        )
+        return buffer
