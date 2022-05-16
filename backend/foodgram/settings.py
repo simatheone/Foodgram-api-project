@@ -67,14 +67,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
-    'ENGINE': os.getenv(
-        'DB_ENGINE', default='django.db.backends.postgresql'
-    ),
-    'NAME': os.getenv('DB_NAME', default='postgres'),
-    'USER': os.getenv('DB_USER', default='postgres'),
-    'PASSWORD': os.getenv('DB_PASSWORD', default='postgres'),
-    'HOST': os.getenv('DB_HOST', default='db'),
-    'PORT': os.getenv('DB_PORT', default='5432')
+    'default': {
+        'ENGINE': os.getenv(
+            'DB_ENGINE', default='django.db.backends.postgresql'
+        ),
+        'NAME': os.getenv('DB_NAME', default='postgres'),
+        'USER': os.getenv('POSTGRES_USER', default='postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+        'HOST': os.getenv('DB_HOST', default='db'),
+        'PORT': os.getenv('DB_PORT', default='5432')
+    }
 }
 
 
@@ -105,7 +107,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS':
         'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 2,
+    'PAGE_SIZE': 6,
 }
 
 STATIC_URL = 'static/'
