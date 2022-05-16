@@ -1,20 +1,24 @@
 version: '3.8'
 services:
 
+  frontend:
+    container_name: frontend_foodgram
+    image: simatheone/foodgram-frontend:latest
+    volumes:
+      - ../frontend/:/app/result_build/
+
   db:
     image: postgres:13.0-alpine
     volumes:
-      - /var/lib/postgres/data/
+      - postgres_data:/var/lib/postgres/data/
     env_file:
       - ../backend/.env
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile-backend
-    image: simatheone/foodgram:latest
+    container_name: backend_foodgram
+    image: simatheone/foodgram-backend:latest
     restart: always
-    volums:
+    volumes:
       - static_value:/foodgram_backend/static/
       - media_value:/foodgram_backend/media/
     depends_on:
@@ -22,14 +26,8 @@ services:
     env_file:
       - ../backend/.env
 
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ../frontend/:/app/result_build/
-
   nginx:
+    container_name: nginx_foodgram
     image: nginx:1.21.3-alpine
     ports:
       - "80:80"
@@ -43,5 +41,6 @@ services:
       - backend
 
 volumes:
+  postgres_data:
   static_value:
   media_value:
