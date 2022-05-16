@@ -1,11 +1,18 @@
 from django_filters import FilterSet
 from django_filters.filters import (CharFilter, ModelChoiceFilter,
                                     ModelMultipleChoiceFilter, NumberFilter)
+
 from recipes.models import Ingredient, Recipe, Tag
 from users.models import CustomUser
 
 
 class RecipeFilter(FilterSet):
+    """
+    Custom filter which is used in RecipeViewSet.
+    Uses model: Recipe.
+    Filtering fields:
+        tags, author, is_favorited, is_in_shopping_cart
+    """
     tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
@@ -22,6 +29,12 @@ class RecipeFilter(FilterSet):
     )
 
     def filter_is_favorited(self, queryset, name, value):
+        """
+        Method gets all users recipes that are in favorite list
+        if request value == 1 and recipes that are not in there
+        if request value == 0.
+        Returns queryset ordered by primary key.
+        """
         user = self.request.user
         if value == 1:
             queryset = Recipe.objects.filter(favorite_recipe__user=user)
@@ -32,6 +45,12 @@ class RecipeFilter(FilterSet):
         return queryset.order_by('-pk')
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
+        """
+        Method gets all users recipes that are in shopping cart
+        if request value == 1 and recipes that are not in there
+        if request value == 0.
+        Returns queryset ordered by primary key.
+        """
         user = self.request.user
         if value == 1:
             queryset = Recipe.objects.filter(shopping_cart__user=user)
@@ -47,7 +66,12 @@ class RecipeFilter(FilterSet):
 
 
 class IngredientFilter(FilterSet):
-    name = CharFilter(field_name='name', lookup_expr='icontains')
+    """
+    Custom filter which is used in IngredientViewSet.
+    Uses model: Recipe.
+    Filter filed 'name' by first symbols.
+    """
+    name = CharFilter(field_name='name', lookup_expr='istartswith')
 
     class Meta:
         model = Ingredient
