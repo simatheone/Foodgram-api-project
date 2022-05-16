@@ -1,13 +1,19 @@
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
-from recipes.models import Ingredient, Recipe, RecipeIngredientAmount, Tag
 from rest_framework import serializers
+
+from recipes.models import Ingredient, Recipe, RecipeIngredientAmount, Tag
 from users.models import CustomUser, Subscription
 
 
 class IsSubscribedMethod:
-
+    """
+    Class for inheritance.
+    Uses in: CustomUserSerializer, SubscriptionSerializer.
+    Provides method get_is_subscribed which repeates in
+    serializers that have been mentioned above.
+    """
     def get_is_subscribed(self, obj):
         """
         Method checks if user is a subscriber of an author.
@@ -22,7 +28,13 @@ class IsSubscribedMethod:
 
 class CustomUserSerializer(serializers.ModelSerializer,
                            IsSubscribedMethod):
-    """Serializer for CustomUserViewset."""
+    """
+    Serializer for CustomUserViewset.
+    Uses model: CustomUser.
+    Serializes/deserializes fileds of a model:
+    email, id, username, first_name, last_name, password and
+    method field is_subscribed.
+    """
     is_subscribed = serializers.SerializerMethodField(
         read_only=True
     )
@@ -38,9 +50,11 @@ class CustomUserSerializer(serializers.ModelSerializer,
 
 class TagSerializer(serializers.ModelSerializer):
     """
-    Serializer for the TagViewSet.
+    Serializer for TagViewset.
+    Uses model: Tag.
+    Serializes/deserializes fileds of a model:
+    id, name, color, slug.
     """
-
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
@@ -48,9 +62,11 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """
-    Serializer for the IngredientViewSet.
+    Serializer for IngredientViewSet.
+    Uses model: Ingredient.
+    Serializes/deserializes fileds of a model:
+    id, name, measurement_unit.
     """
-
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -58,7 +74,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientAmountSerializer(serializers.ModelSerializer):
     """
-    Serializes ingredient fields + amount in RecipeReadSerializer.
+    Serializer is used in RecipeReadSerializer.
+    Uses model: RecipeIngredientAmount.
+    Serializes/deserializes fileds of Ingredient model:
+    id, name, measurement_unit and additional 'amount' field.
     """
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
@@ -75,7 +94,10 @@ class RecipeIngredientAmountSerializer(serializers.ModelSerializer):
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
     """
-    Serializes ingredient, amount fields in RecipeWriteSerializer.
+    Serializer is used in RecipeWriteSerializer.
+    Uses model: RecipeIngredientAmount.
+    Serializes/deserializes fileds of a model:
+    id, amount.
     """
     id = serializers.IntegerField()
     amount = serializers.IntegerField()
@@ -88,8 +110,12 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class AuthorForRecipeSerializer(serializers.ModelSerializer,
                                 IsSubscribedMethod):
     """
+    Serializer is used in RecipeReadSerializer.
     Serializes the author of recipe.
-    Uses in RecipeReadSerializer.
+    Uses model: CustomUser.
+    Serializes/deserializes fileds of a model:
+    email, id, username, first_name, last_name, password and
+    method field is_subscribed.
     """
     is_subscribed = serializers.SerializerMethodField(
         read_only=True
@@ -104,7 +130,14 @@ class AuthorForRecipeSerializer(serializers.ModelSerializer,
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
-    """Read Serializer for RecipeViewSet."""
+    """
+    Read Serializer for RecipeViewset.
+    Uses model: Recipe.
+    Serializes/deserializes fileds of a model:
+    id, tags, author, ingredients, name, image,
+    text, cooking_time + additional method fields:
+        is_favorited, is_in_shopping_cart.
+    """
     author = AuthorForRecipeSerializer(
         read_only=True,
         default=serializers.CurrentUserDefault()
@@ -127,12 +160,18 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
+        """
+        Method checks if user has recipe in favorite list.
+        """
         user = self.context['request'].user
         if user.is_authenticated:
             return user.favorite_recipe.filter(recipe=obj).exists()
         return False
 
     def get_is_in_shopping_cart(self, obj):
+        """
+        Method checks if user has recipe in shopping cart.
+        """
         user = self.context['request'].user
         if user.is_authenticated:
             return user.shopping_cart.filter(recipe=obj).exists()
@@ -140,7 +179,13 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
-    """Write Serializer for RecipeViewSet."""
+    """
+    Write Serializer for RecipeViewSet.
+    Uses model: Recipe.
+    Serializes/deserializes fileds of a model:
+    id, tags, author, ingredients, name, image,
+    text, cooking_time.
+    """
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all()
@@ -230,7 +275,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         for ingredient in value:
             ingredient_obj = get_object_or_404(
-                Ingredient, pk=ingredient['id']
+                Ingredient, pk=ingredient.get('id')
             )
             if ingredient_obj in ingredients_in_recipe:
                 raise serializers.ValidationError(
@@ -267,6 +312,9 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     """
     Serializes a short variant of recipe.
     Uses in SubscriptionSerializer.
+    Uses model: Recipe.
+    Serializes/deserializes fileds of Recipe model:
+    id, name, image, cooking_time.
     """
     image = Base64ImageField()
 
@@ -275,9 +323,15 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionSerializer(serializers.ModelSerializer, IsSubscribedMethod):
+class SubscriptionSerializer(serializers.ModelSerializer,
+                             IsSubscribedMethod):
     """
     Serializer for Subscription.
+    Uses model: Subscription.
+    Serializes/deserializes fileds of CustomUser:
+    email, id, username, first_name, last_name
+    + additional method fields:
+        is_subscribed, recipes, recipes_count
     """
     email = serializers.ReadOnlyField(source='author.email')
     id = serializers.ReadOnlyField(source='author.id')
@@ -298,7 +352,6 @@ class SubscriptionSerializer(serializers.ModelSerializer, IsSubscribedMethod):
 
     def get_recipes(self, obj):
         """
-        Method field.
         Method returns list of the author's recipes.
         Provides the recipe limitation to return.
         """
@@ -315,8 +368,7 @@ class SubscriptionSerializer(serializers.ModelSerializer, IsSubscribedMethod):
 
     def get_recipes_count(self, obj):
         """
-        Method field.
-        Method returns the count of the author's recipes.
+        Method returns the number of the author's recipes.
         """
         results = Recipe.objects.filter(author=obj.author).aggregate(
             count_recipes=Count('name')
