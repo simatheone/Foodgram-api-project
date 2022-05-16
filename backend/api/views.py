@@ -1,4 +1,3 @@
-from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -7,7 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from foodgram.settings import SHOPPING_CART_FILENAME
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import CustomUser, Subscription
 from .filters import IngredientFilter, RecipeFilter
@@ -25,14 +23,22 @@ DOUBLE_SHOPPING_ERROR = 'Нельзя добавить в покупки два 
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """TagViewSet for listing and retrieving Tags."""
+    """
+    The viewset for Tag model.
+    Allowed request methods: GET.
+    Permissions: All users.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminOrReadOnly,)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """IngredientViewSet for listing and retrieving Ingredients."""
+    """
+    The viewset for Ingredient model.
+    Allowed request methods: GET.
+    Permissions: All users.
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -43,6 +49,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class CustomUserViewSet(UserViewSet):
     """
     The viewset for model CustomUser.
+    The viewset inherits from UserViewSet for Djoser library.
     Available endpoints with:
         GET method:
             api/users/, api/users/{user_id}/,
@@ -50,7 +57,7 @@ class CustomUserViewSet(UserViewSet):
         POST method:
             api/users/, api/users/set_password/,
             api/auth/token/login/, api/auth/token/logout/
-    Permissions for users are set in Djoser library.
+    Permissions are set in Djoser library.
     """
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
@@ -61,6 +68,11 @@ class CustomUserViewSet(UserViewSet):
         url_name='subscriptions'
     )
     def subscriptions(self, request):
+        """
+        Additional method for the endpoint: api/users/subscriptions.
+        Allowed request methods: GET.
+        Permissions: Authenticated user.
+        """
         user = self.request.user
         queryset = user.sub_user.all()
         serializer = SubscriptionSerializer(
@@ -71,7 +83,11 @@ class CustomUserViewSet(UserViewSet):
 
 class SubscribeAPIView(generics.ListCreateAPIView,
                        generics.DestroyAPIView):
-    """SubscribeAPIView for Subscription model."""
+    """
+    APIView for Subscription model.
+    Allowed request methods: POST, DELETE.
+    Permissions: Authenticated users.
+    """
     serializer_class = SubscriptionSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -112,7 +128,19 @@ class SubscribeAPIView(generics.ListCreateAPIView,
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """RecipeViewSet for Recipe model."""
+    """
+    The viewset for Recipe model.
+    Allowed request methods: GET, POST, PATCH, DELETE.
+    Permissions:
+        - All users can get a list of recipes;
+        - Authenticated users can create/patch/delete recipes;
+        - Only the owner of the recipe can patch/delete it.
+    Filtering:
+        - by authors id's;
+        - by tags' slug;
+        - by in_favorited (1 or 0);
+        - by in_shopping_cart (1 or 0);
+    """
     queryset = Recipe.objects.all()
     permission_classes = (IsOwnerAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -131,21 +159,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['get'],
         permission_classes=(IsAuthenticated,),
         url_name='download_recipe'
     )
     def download_shopping_cart(self, request):
         """
-        PDF file for downloading with Ingredients.
+        Additional method for the endpoint: api/recipes/download_shopping_cart.
+        Returns PDF file for downloading with Ingredients.
+        Allowed request methods: GET.
+        Permissions: Authenticated user.
         """
         user = request.user
-        create_pdf_shopping_cart(user)      
+        create_pdf_shopping_cart(user)
 
 
 class FavoriteAPIView(generics.CreateAPIView,
                       generics.DestroyAPIView):
-    """FavoriteApiView for Favorite model."""
+    """
+    ApiView for Favorite model.
+    Allowed request methods: POST, DELETE.
+    Permissions: Authenticated users.
+    """
     serializer_class = ShortRecipeSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -182,7 +216,11 @@ class FavoriteAPIView(generics.CreateAPIView,
 
 class ShoppingCartAPIView(generics.CreateAPIView,
                           generics.DestroyAPIView):
-    """Shopping cart ApiView for ShoppingCart model."""
+    """
+    APIView for ShoppingCart model.
+    Allowed request methods: POST, DELETE.
+    Permissions: Authenticated users.
+    """
     serializer_class = ShortRecipeSerializer
     permission_classes = (IsAuthenticated,)
 
