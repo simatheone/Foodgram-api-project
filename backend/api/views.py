@@ -1,3 +1,4 @@
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -6,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from foodgram.settings import SHOPPING_CART_FILENAME
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import CustomUser, Subscription
 from .filters import IngredientFilter, RecipeFilter
@@ -170,7 +172,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Permissions: Authenticated user.
         """
         user = request.user
-        create_pdf_shopping_cart(user)
+        buffer = create_pdf_shopping_cart(user)
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
+        )
 
 
 class FavoriteAPIView(generics.CreateAPIView,
