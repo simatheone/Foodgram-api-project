@@ -1,0 +1,11 @@
+# Byte-compiled / optimized / DLL files
+*/__pycache__*
+
+# migrations of test DB
+*/migrations*
+
+# test DB
+db.sqlite3
+
+# files in media root
+media/
