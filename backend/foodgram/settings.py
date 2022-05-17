@@ -19,6 +19,9 @@ ALLOWED_HOSTS = os.getenv(
     'SERVERNAMES', default='*'
 ).split(',')
 
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS', default='http://localhost'
+).split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
