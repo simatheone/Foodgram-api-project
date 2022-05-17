@@ -84,10 +84,11 @@ class CustomUserViewSet(UserViewSet):
         """
         user = self.request.user
         queryset = user.sub_user.all()
+        page = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
-            queryset, many=True, context={'request': request}
+            page, many=True, context={'request': request}
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return self.get_paginated_response(serializer.data)
 
 
 class SubscribeAPIView(generics.ListCreateAPIView,
