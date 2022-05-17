@@ -43,7 +43,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         'Ингридиент',
         max_length=200
-        )
+    )
     measurement_unit = models.CharField(
         'Единицы измерения',
         max_length=200
@@ -99,7 +99,7 @@ class RecipeIngredientAmount(models.Model):
             UniqueConstraint(
                 fields=('recipe', 'ingredient'),
                 name='unique_ingredient_for_recipe')
-            ]
+        ]
 
     def __str__(self):
         return str(self.amount)

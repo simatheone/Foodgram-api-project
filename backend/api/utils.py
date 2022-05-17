@@ -79,7 +79,7 @@ def create_pdf_shopping_cart(user):
     # Set fonts for pdf file
     pdfmetrics.registerFont(TTFont(
         'DejaVuSerif', 'DejaVuSerif.ttf', 'UTF-8'
-        )
+    )
     )
     pdf_page.setFont('DejaVuSerif', 14)
 
