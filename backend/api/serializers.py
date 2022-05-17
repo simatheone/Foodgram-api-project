@@ -10,7 +10,9 @@ from users.models import CustomUser, Subscription
 class IsSubscribedMethod:
     """
     Class for inheritance.
-    Uses in: CustomUserSerializer, SubscriptionSerializer.
+    Uses in:
+        CustomUserReadSerializer, CustomUserWriteSerializer,
+        SubscriptionSerializer.
     Provides method get_is_subscribed which repeates in
     serializers that have been mentioned above.
     """
@@ -26,13 +28,13 @@ class IsSubscribedMethod:
         return False
 
 
-class CustomUserSerializer(serializers.ModelSerializer,
-                           IsSubscribedMethod):
+class CustomUserReadSerializer(serializers.ModelSerializer,
+                               IsSubscribedMethod):
     """
-    Serializer for CustomUserViewset.
+    Read Serializer for CustomUserViewset.
     Uses model: CustomUser.
     Serializes/deserializes fileds of a model:
-    email, id, username, first_name, last_name, password and
+    email, id, username, first_name, last_name and
     method field is_subscribed.
     """
     is_subscribed = serializers.SerializerMethodField(
@@ -42,10 +44,24 @@ class CustomUserSerializer(serializers.ModelSerializer,
     class Meta:
         model = CustomUser
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'password', 'is_subscribed'
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed'
         )
-        extra_kwargs = {'password': {'write_only': True}}
+
+
+class CustomUserWriteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for CustomUserViewset.
+    Uses model: CustomUser.
+    Serializes/deserializes fileds of a model:
+    email, id, username, first_name, last_name, password.
+    """
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'password'
+        )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -107,28 +123,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
 
-class AuthorForRecipeSerializer(serializers.ModelSerializer,
-                                IsSubscribedMethod):
-    """
-    Serializer is used in RecipeReadSerializer.
-    Serializes the author of recipe.
-    Uses model: CustomUser.
-    Serializes/deserializes fileds of a model:
-    email, id, username, first_name, last_name, password and
-    method field is_subscribed.
-    """
-    is_subscribed = serializers.SerializerMethodField(
-        read_only=True
-    )
-
-    class Meta:
-        model = CustomUser
-        fields = (
-            'email', 'id', 'username', 'first_name',
-            'last_name', 'is_subscribed'
-        )
-
-
 class RecipeReadSerializer(serializers.ModelSerializer):
     """
     Read Serializer for RecipeViewset.
@@ -138,7 +132,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     text, cooking_time + additional method fields:
         is_favorited, is_in_shopping_cart.
     """
-    author = AuthorForRecipeSerializer(
+    author = CustomUserReadSerializer(
         read_only=True,
         default=serializers.CurrentUserDefault()
     )

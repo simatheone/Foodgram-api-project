@@ -13,7 +13,8 @@ from users.models import CustomUser, Subscription
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminOrReadOnly, IsOwnerAdminOrReadOnly
-from .serializers import (CustomUserSerializer, IngredientSerializer,
+from .serializers import (CustomUserReadSerializer, CustomUserWriteSerializer,
+                          IngredientSerializer,
                           RecipeReadSerializer, RecipeWriteSerializer,
                           ShortRecipeSerializer, SubscriptionSerializer,
                           TagSerializer)
@@ -63,7 +64,11 @@ class CustomUserViewSet(UserViewSet):
     Permissions are set in Djoser library.
     """
     queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return CustomUserReadSerializer
+        return CustomUserWriteSerializer
 
     @action(
         detail=False,
