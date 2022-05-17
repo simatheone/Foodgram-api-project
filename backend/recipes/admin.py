@@ -1,10 +1,9 @@
 from django.contrib import admin
 
 from foodgram.settings import EMPTY_VALUE_ADMIN_PANEL
-from .models import (
-    Favorite, Ingredient, Recipe, RecipeIngredientAmount,
-    ShoppingCart, Tag
-)
+
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredientAmount,
+                     ShoppingCart, Tag)
 
 
 class RecipeIngredientAdmin(admin.StackedInline):

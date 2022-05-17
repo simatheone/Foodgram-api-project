@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.db.models import UniqueConstraint
 
 from foodgram.settings import MAX_LEN_REPR

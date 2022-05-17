@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from foodgram.settings import SHOPPING_CART_FILENAME
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import CustomUser, Subscription
+
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminOrReadOnly, IsOwnerAdminOrReadOnly
 from .serializers import (CustomUserSerializer, IngredientSerializer,
@@ -95,8 +96,7 @@ class SubscribeAPIView(generics.ListCreateAPIView,
 
     def get_queryset(self):
         author_id = self.kwargs['user_id']
-        queryset = get_object_or_404(CustomUser, pk=author_id)
-        return queryset
+        return get_object_or_404(CustomUser, pk=author_id)
 
     def create(self, request, *args, **kwargs):
         user = request.user
