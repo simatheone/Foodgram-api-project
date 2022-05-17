@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv(
     default='django-insecure-^fbr$vu0g9aqhy1ymvo-fgdl4me^u!i$3zrq%_p#+^f%1v9@_z'
 )
 
-DEBUG = os.getenv('DEBUG', default=False)
+DEBUG = False
 
 ALLOWED_HOSTS = os.getenv(
     'SERVERNAMES', default='*'
@@ -68,18 +68,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv(
-            'DB_ENGINE', default='django.db.backends.postgresql'
-        ),
-        'NAME': os.getenv('DB_NAME', default='postgres'),
-        'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default='5432')
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv(
+                'DB_ENGINE', default='django.db.backends.postgresql'
+            ),
+            'NAME': os.getenv('DB_NAME', default='postgres'),
+            'USER': os.getenv('POSTGRES_USER', default='postgres'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+            'HOST': os.getenv('DB_HOST', default='db'),
+            'PORT': os.getenv('DB_PORT', default='5432')
+        }
+    }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -122,7 +130,7 @@ MEDIA_ROOT = BASE_DIR.joinpath('media')
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'api.serializers.CustomUserSerializer',
+        'user': 'api.serializers.CustomUserReadSerializer',
     },
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.IsAuthenticated'],
