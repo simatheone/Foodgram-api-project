@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -70,6 +71,11 @@ class CustomUserViewSet(UserViewSet):
         if self.request.method == 'GET':
             return CustomUserReadSerializer
         return CustomUserWriteSerializer
+
+    def perform_create(self, serializer):
+        if 'password' in self.request.data:
+            password = make_password(self.request.data['password'])
+            serializer.save(password=password)
 
     @action(
         detail=False,
