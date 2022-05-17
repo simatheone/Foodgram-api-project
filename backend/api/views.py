@@ -34,6 +34,7 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -47,6 +48,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
 
 
 class CustomUserViewSet(UserViewSet):
@@ -193,6 +195,7 @@ class FavoriteAPIView(generics.CreateAPIView,
     """
     serializer_class = ShortRecipeSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = None
 
     def get_queryset(self):
         recipe_id = self.kwargs['recipe_id']
@@ -234,6 +237,7 @@ class ShoppingCartAPIView(generics.CreateAPIView,
     """
     serializer_class = ShortRecipeSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = None
 
     def get_queryset(self):
         recipe_id = self.kwargs['recipe_id']
