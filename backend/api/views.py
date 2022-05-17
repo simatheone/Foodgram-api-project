@@ -14,10 +14,9 @@ from users.models import CustomUser, Subscription
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminOrReadOnly, IsOwnerAdminOrReadOnly
 from .serializers import (CustomUserReadSerializer, CustomUserWriteSerializer,
-                          IngredientSerializer,
-                          RecipeReadSerializer, RecipeWriteSerializer,
-                          ShortRecipeSerializer, SubscriptionSerializer,
-                          TagSerializer)
+                          IngredientSerializer, RecipeReadSerializer,
+                          RecipeWriteSerializer, ShortRecipeSerializer,
+                          SubscriptionSerializer, TagSerializer)
 from .utils import create_pdf_shopping_cart
 
 SELF_FOLLOWING_ERROR = 'Пользователь не может подписаться сам на себя.'
