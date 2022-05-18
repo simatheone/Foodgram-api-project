@@ -1,8 +1,14 @@
+import io
+
 from django.contrib.auth.hashers import make_password
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -18,12 +24,14 @@ from .serializers import (CustomUserReadSerializer, CustomUserWriteSerializer,
                           IngredientSerializer, RecipeReadSerializer,
                           RecipeWriteSerializer, ShortRecipeSerializer,
                           SubscriptionSerializer, TagSerializer)
-from .utils import create_pdf_shopping_cart
+from .utils import get_shopping_cart_for_writing
 
 SELF_FOLLOWING_ERROR = 'Пользователь не может подписаться сам на себя.'
 DOUBLE_FOLLOWING_ERROR = 'Нельзя дважды подписаться на одного юзера.'
 DOUBLE_FAVORITE_ERROR = 'Нельзя дважды добавить рецепт в избранное.'
 DOUBLE_SHOPPING_ERROR = 'Нельзя добавить в покупки два одинаковых рецепта.'
+CART_TITLE = 'СПИСОК ПОКУПОК'
+EMPTY_CART_TITLE = 'Список покупок пуст'
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -185,12 +193,58 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Permissions: Authenticated user.
         """
         user = request.user
-        buffer = create_pdf_shopping_cart(user)
-        return FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
+        # buffer = create_pdf_shopping_cart(user)
+        # return FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
+        # )
+        buffer = io.BytesIO()
+        pdf_page = canvas.Canvas(buffer, pagesize=letter)
+
+        # Set fonts for pdf file
+        pdfmetrics.registerFont(TTFont(
+            'DejaVuSerif', 'DejaVuSerif.ttf', 'UTF-8'
         )
+        )
+        pdf_page.setFont('DejaVuSerif', 14)
+
+        # Set x and y positions for the text on the page
+        x_value, y_value = 20, 600
+
+        recipes_list = user.shopping_cart.all()
+        # Calling a function from utils
+        ingredients_list = get_shopping_cart_for_writing(recipes_list)
+
+        if recipes_list:
+            pdf_page.drawCentredString(315, 700, CART_TITLE)
+
+            for value in ingredients_list:
+                name = value.capitalize()
+                amount = ingredients_list[value]['amount']
+                measure = ingredients_list[value]['measurement_unit']
+                write_string = f'{name} - {amount} ({measure});'
+                pdf_page.drawString(
+                    x_value, y_value, write_string
+                )
+                y_value -= 30
+            pdf_page.save()
+            buffer.seek(0)
+            return FileResponse(
+                buffer,
+                as_attachment=True,
+                filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
+            )
+        else:
+            pdf_page.drawCentredString(315, 425, EMPTY_CART_TITLE)
+            pdf_page.showPage()
+            pdf_page.save()
+            buffer.seek(0)
+            return FileResponse(
+                buffer,
+                as_attachment=True,
+                filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
+            )
 
 
 class FavoriteAPIView(generics.CreateAPIView,
