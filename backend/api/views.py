@@ -188,7 +188,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         buffer = create_pdf_shopping_cart(user)
         return FileResponse(
             buffer,
-            as_attachment=True,
+            as_attachment=False,
             filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
         )
 
