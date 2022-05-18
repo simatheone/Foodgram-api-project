@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv(
     default='django-insecure-^fbr$vu0g9aqhy1ymvo-fgdl4me^u!i$3zrq%_p#+^f%1v9@_z'
 )
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', default=False)
 
 ALLOWED_HOSTS = os.getenv(
     'SERVERNAMES', default='*'
@@ -138,7 +138,6 @@ DJOSER = {
     },
     'HIDE_USERS': False
 }
-
 
 LANGUAGE_CODE = 'ru'
 

@@ -134,7 +134,6 @@ dmypy.json
 # Media and static files
 
 media/
-static/
 
 # Personal notes
 todo.txt
