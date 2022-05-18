@@ -26,7 +26,7 @@ DOUBLE_FAVORITE_ERROR = 'Нельзя дважды добавить рецепт
 DOUBLE_SHOPPING_ERROR = 'Нельзя добавить в покупки два одинаковых рецепта.'
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """
     The viewset for Tag model.
     Allowed request methods: GET.
@@ -38,7 +38,7 @@ class TagViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """
     The viewset for Ingredient model.
     Allowed request methods: GET.

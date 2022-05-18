@@ -1,8 +1,13 @@
 # Byte-compiled / optimized / DLL files
-*/__pycache__*
+__pycache__/
 
 # test DB
 db.sqlite3
+*.sqlite3
 
 # files in media root
-media/
+*/media/
+
+# env example and template
+env.example
+env.template
