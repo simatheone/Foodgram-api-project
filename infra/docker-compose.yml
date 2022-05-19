@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgres/data/
     env_file:
-      - ../backend/.env
+      - ./.env
 
   backend:
     container_name: backend_foodgram
@@ -24,7 +24,7 @@ services:
     depends_on:
       - db
     env_file:
-      - ../backend/.env
+      - ./.env
 
   nginx:
     container_name: nginx_foodgram
