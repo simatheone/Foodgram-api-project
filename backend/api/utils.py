@@ -5,12 +5,10 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-from foodgram.settings import BASE_DIR
 from recipes.models import RecipeIngredientAmount
 
 CART_TITLE = 'СПИСОК ПОКУПОК'
 EMPTY_CART_TITLE = 'Список покупок пуст'
-FONTS_DIR = BASE_DIR.joinpath('static/fonts/DejaVuSerif.ttf')
 
 
 def get_shopping_cart_for_writing(recipes_list):
@@ -79,8 +77,8 @@ def create_pdf_shopping_cart(user):
     pdf_page = canvas.Canvas(buffer, pagesize=letter)
 
     # Set fonts for pdf file
-    pdfmetrics.registerFont(TTFont('DejaVuSerif', FONTS_DIR))
-    pdf_page.setFont('DejaVuSerif', 14)
+    pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf'))
+    pdf_page.setFont('Vera', 14)
 
     # Set x and y positions for the text on the page
     x_value, y_value = 20, 600
