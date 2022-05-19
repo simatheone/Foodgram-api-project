@@ -139,6 +139,8 @@ DJOSER = {
     'HIDE_USERS': False
 }
 
+USE_X_FORWARDED_HOST = True
+
 LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
