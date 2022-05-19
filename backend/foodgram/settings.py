@@ -19,7 +19,7 @@ ALLOWED_HOSTS = os.getenv(
 ).split(',')
 
 CSRF_TRUSTED_ORIGINS = os.getenv(
-    'CSRF_TRUSTED_ORIGINS', default='http://localhost'
+    'CSRF_TRUSTED_ORIGINS', default='http://foodfoodgram.sytes.net'
 ).split(',')
 
 INSTALLED_APPS = [
