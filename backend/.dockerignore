@@ -2,7 +2,6 @@
 __pycache__/
 
 # test DB
-db.sqlite3
 *.sqlite3
 
 # files in media root
