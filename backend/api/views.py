@@ -24,6 +24,8 @@ SELF_FOLLOWING_ERROR = 'Пользователь не может подписа�
 DOUBLE_FOLLOWING_ERROR = 'Нельзя дважды подписаться на одного юзера.'
 DOUBLE_FAVORITE_ERROR = 'Нельзя дважды добавить рецепт в избранное.'
 DOUBLE_SHOPPING_ERROR = 'Нельзя добавить в покупки два одинаковых рецепта.'
+FAVORITE_DELETION_ERROR = 'Рецепт уже удален из списка избранного.'
+CART_DELETION_ERROR = 'Рецепт уже удален из списка покупок.'
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -186,10 +188,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """
         user = request.user
         buffer = create_pdf_shopping_cart(user)
+        filename = f'{user.username}\'s-{SHOPPING_CART_FILENAME}'
         return FileResponse(
             buffer,
             as_attachment=True,
-            filename=f'{user.username}\'s {SHOPPING_CART_FILENAME}'
+            filename=filename
         )
 
 
@@ -230,7 +233,10 @@ class FavoriteAPIView(generics.CreateAPIView,
         recipe_obj = self.get_queryset()
         favorite = Favorite.objects.filter(user=user, recipe=recipe_obj)
         if not favorite:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'message': FAVORITE_DELETION_ERROR},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -268,8 +274,13 @@ class ShoppingCartAPIView(generics.CreateAPIView,
     def delete(self, request, *args, **kwargs):
         user = request.user
         recipe_obj = self.get_queryset()
-        shopping_cart = Favorite.objects.filter(user=user, recipe=recipe_obj)
+        shopping_cart = ShoppingCart.objects.filter(
+            user=user, recipe=recipe_obj
+        )
         if not shopping_cart:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'message': CART_DELETION_ERROR},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         shopping_cart.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
