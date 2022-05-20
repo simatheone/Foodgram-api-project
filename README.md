@@ -58,12 +58,18 @@ git clone https://github.com/Simatheone/foodgram-project-react.git
 cd infra/
 ```
 
-3. В терминали запустить **docker-compose**
+3. Создать `.env` файл и заполнить его в соответствии с `env.example`, `env.template`.
+
+```bash
+touch .env
+```
+
+4. В терминали запустить **docker-compose**
 ```
 docker-compose up -d
 ```
 
-4. Выполнить миграции, сборку статических файлов, заполнение базы исходными ингредиентами, создание супер пользователя:
+5. Выполнить миграции, сборку статических файлов, заполнение базы исходными ингредиентами, создание супер пользователя:
 ```bash
 docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py collectstatic --no-input
