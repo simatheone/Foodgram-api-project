@@ -14,7 +14,8 @@ from users.models import CustomUser, Subscription
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminOrReadOnly, IsOwnerAdminOrReadOnly
-from .serializers import (CustomUserReadSerializer, CustomUserWriteSerializer,
+from .serializers import (CustomUserSetPasswordSerializer,
+                          CustomUserReadSerializer, CustomUserWriteSerializer,
                           IngredientSerializer, RecipeReadSerializer,
                           RecipeWriteSerializer, ShortRecipeSerializer,
                           SubscriptionSerializer, TagSerializer)
@@ -78,6 +79,30 @@ class CustomUserViewSet(UserViewSet):
         if 'password' in self.request.data:
             password = make_password(self.request.data['password'])
             serializer.save(password=password)
+
+    @action(
+        detail=False,
+        methods=['post'],
+        permission_classes=(IsAuthenticated,),
+        url_name='set_password'
+    )
+    def set_password(self, request):
+        """
+        Additional method for the endpoint: api/users/set_password.
+        Allowed request methods: POST.
+        Permissions: Authenticated user.
+        """
+        serializer = CustomUserSetPasswordSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(
+                {'message': 'Пароль успешно изменен'},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,

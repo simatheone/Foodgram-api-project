@@ -1,3 +1,5 @@
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.password_validation import validate_password
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
@@ -62,6 +64,42 @@ class CustomUserWriteSerializer(serializers.ModelSerializer):
             'email', 'id', 'username', 'first_name',
             'last_name', 'password'
         )
+
+
+class CustomUserSetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for action 'set_password', CustomUserViewset.
+    Serializes/deserializes fileds:
+    current_password, new_password.
+    """
+    current_password = serializers.CharField()
+    new_password = serializers.CharField()
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        user_password = user.password
+
+        if check_password(value, user_password) is False:
+            raise serializers.ValidationError(
+                'Неверно введен старый пароль.',
+                code='authorization'
+            )
+        return value
+
+    def validate_new_password(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Укажите "Новый пароль"'
+            )
+        validate_password(value)
+        return value
+
+    def create(self, validate_data):
+        user = self.context['request'].user
+        new_password = validate_data.get('new_password')
+        user.set_password(new_password)
+        user.save()
+        return validate_data
 
 
 class TagSerializer(serializers.ModelSerializer):
