@@ -1,10 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.core import validators
 from django.db import models
 from django.db.models import UniqueConstraint
 
 from foodgram.settings import MAX_LEN_REPR
 
 CustomUser = get_user_model()
+
+MIN_AMOUNT_MESSAGE = 'Количество ингредиента должно быть больше 0.'
 
 
 class Tag(models.Model):
@@ -88,7 +91,12 @@ class RecipeIngredientAmount(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         default=1,
-        verbose_name='Количество'
+        verbose_name='Количество',
+        validators=(
+            validators.MinValueValidator(
+                1, message=MIN_AMOUNT_MESSAGE
+            ),
+        )
     )
 
     class Meta:
