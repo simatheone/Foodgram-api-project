@@ -318,7 +318,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
             if ingredient_obj in ingredients_in_recipe:
                 raise serializers.ValidationError(
-                    'Рецепт не может иметь двух одиноковых ингредиентов.'
+                    [
+                        {'message':
+                         'Рецепт не может иметь двух одиноковых ингредиентов.'}
+                    ],
+                    code='invalid_ingredient'
                 )
             ingredients_in_recipe.append(ingredient_obj)
 
