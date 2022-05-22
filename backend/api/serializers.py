@@ -122,6 +122,13 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         model = RecipeIngredientAmount
         fields = ('id', 'amount')
 
+    def validate_amount(self, value):
+        if value == 0:
+            return serializers.ValidationError(
+                'Количество ингредиента должно быть больше 0.'
+            )
+        return value
+
 
 class RecipeReadSerializer(serializers.ModelSerializer):
     """
@@ -276,9 +283,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     'Рецепт не может иметь двух одиноковых ингредиентов.'
                 )
             ingredients_in_recipe.append(ingredient_obj)
-            if ingredient['amount'] < 0:
+
+            amount = ingredient['amount']
+            if not isinstance(amount, int):
+                error_message = amount.detail[0]
                 raise serializers.ValidationError(
-                    'Количество ингредиента должно быть больше 0.'
+                    error_message
                 )
         return value
 
