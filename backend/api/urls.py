@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 
 from .views import (CustomUserViewSet, FavoriteAPIView, IngredientViewSet,
@@ -6,6 +9,8 @@ from .views import (CustomUserViewSet, FavoriteAPIView, IngredientViewSet,
                     TagViewSet)
 
 app_name = 'api'
+PATH_TO_REDOC_HTML = str(Path('../docs/redoc.html').resolve())
+PATH_TO_REDOC_SCHEMA = str(Path('../docs/openapi-schema.yml').resolve())
 
 router_v1 = DefaultRouter()
 router_v1.register('tags', TagViewSet, basename='tags')
@@ -28,5 +33,12 @@ urlpatterns = [
          ShoppingCartAPIView.as_view(),
          name='shopping_cart'
          ),
-    re_path(r'auth/', include('djoser.urls.authtoken'))
+    re_path(r'auth/', include('djoser.urls.authtoken')),
+    path('docs/',
+         TemplateView.as_view(
+             template_name=PATH_TO_REDOC_HTML,
+             extra_context={'schema_url': PATH_TO_REDOC_SCHEMA}
+         ),
+         name='api-docs'
+         )
 ]
