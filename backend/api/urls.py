@@ -9,8 +9,6 @@ from .views import (CustomUserViewSet, FavoriteAPIView, IngredientViewSet,
                     TagViewSet)
 
 app_name = 'api'
-PATH_TO_REDOC_HTML = str(Path('../docs/redoc.html').resolve())
-PATH_TO_REDOC_SCHEMA = str(Path('../docs/openapi-schema.yml').resolve())
 
 router_v1 = DefaultRouter()
 router_v1.register('tags', TagViewSet, basename='tags')
