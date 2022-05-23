@@ -34,11 +34,4 @@ urlpatterns = [
          name='shopping_cart'
          ),
     re_path(r'auth/', include('djoser.urls.authtoken')),
-    path('docs/',
-         TemplateView.as_view(
-             template_name=PATH_TO_REDOC_HTML,
-             extra_context={'schema_url': PATH_TO_REDOC_SCHEMA}
-         ),
-         name='api-docs'
-         )
 ]
