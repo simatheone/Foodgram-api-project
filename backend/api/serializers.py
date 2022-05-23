@@ -161,7 +161,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
     def validate_amount(self, value):
-        if value == 0:
+        if value <= 0:
             return serializers.ValidationError(
                 'Количество ингредиента должно быть больше 0.'
             )
@@ -245,6 +245,57 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'author')
 
+    def validate(self, data):
+        recipe_name, recipe_text = data['name'], data['text']
+        ingredient_amount = data['ingredients']
+        if not ingredient_amount:
+            raise serializers.ValidationError(
+                'Рецепт не может быть создан без ингредиентов.'
+            )
+        list_of_ingredients = []
+        for value in ingredient_amount:
+            ingredient_obj = get_object_or_404(
+                Ingredient, pk=value.get('id')
+            )
+            if ingredient_obj in list_of_ingredients:
+                raise serializers.ValidationError(
+                    'Рецепт не может иметь двух одиноковых ингредиентов.',
+                )
+            list_of_ingredients.append(ingredient_obj)
+
+            amount = value['amount']
+            if not isinstance(amount, int):
+                error_message = amount.detail[0]
+                raise serializers.ValidationError(
+                    error_message
+                )
+        recipe = Recipe.objects.filter(
+            name=recipe_name, text=recipe_text).exists()
+        if recipe:
+            raise serializers.ValidationError(
+                f'Данный рецепт "{recipe_name}" уже существует.'
+            )
+        return data
+
+    def validate_tags(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Рецепт должен иметь хотя бы 1 тэг.'
+            )
+        for tag in value:
+            if not Tag.objects.filter(name=tag).exists():
+                raise serializers.ValidationError(
+                    f'Данного тэга {tag} нет в списке доступных.'
+                )
+        return value
+
+    def validate_cooking_time(self, value):
+        if value < 1:
+            raise serializers.ValidationError(
+                'Время приготовления должно быть больше 1 мин.'
+            )
+        return value
+
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
@@ -295,63 +346,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             }
         )
         return serializer.data
-
-    def validate(self, data):
-        recipe_name, recipe_text = data['name'], data['text']
-        recipe = Recipe.objects.filter(
-            name=recipe_name, text=recipe_text).exists()
-        if recipe:
-            raise serializers.ValidationError(
-                f'Данный рецепт "{recipe_name}" уже существует.'
-            )
-        return data
-
-    def validate_ingredients(self, value):
-        ingredients_in_recipe = []
-        if not value:
-            raise serializers.ValidationError(
-                'Рецепт не может быть без ингредиентов.'
-            )
-        for ingredient in value:
-            ingredient_obj = get_object_or_404(
-                Ingredient, pk=ingredient.get('id')
-            )
-            if ingredient_obj in ingredients_in_recipe:
-                raise serializers.ValidationError(
-                    [
-                        {'message':
-                         'Рецепт не может иметь двух одиноковых ингредиентов.'}
-                    ],
-                    code='invalid_ingredient'
-                )
-            ingredients_in_recipe.append(ingredient_obj)
-
-            amount = ingredient['amount']
-            if not isinstance(amount, int):
-                error_message = amount.detail[0]
-                raise serializers.ValidationError(
-                    error_message
-                )
-        return value
-
-    def validate_tags(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                'Рецепт должен иметь хотя бы 1 тэг.'
-            )
-        for tag in value:
-            if not Tag.objects.filter(name=tag).exists():
-                raise serializers.ValidationError(
-                    f'Данного тэга {tag} нет в списке доступных.'
-                )
-        return value
-
-    def validate_cooking_time(self, value):
-        if value < 1:
-            raise serializers.ValidationError(
-                'Время приготовления должно быть больше 1 мин.'
-            )
-        return value
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
