@@ -324,18 +324,19 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             ingredients = validated_data.pop('ingredients')
             instance.ingredients.clear()
 
+            for ingredient in ingredients:
+                ingredient_id, amount = ingredient['id'], ingredient['amount']
+                RecipeIngredientAmount.objects.create(
+                    recipe=instance,
+                    ingredient_id=ingredient_id,
+                    amount=amount
+                )
+
         if 'tags' in validated_data:
             tags = validated_data.pop('tags')
             instance.tags.clear()
+            instance.tags.set(tags)
 
-        for ingredient in ingredients:
-            ingredient_id, amount = ingredient['id'], ingredient['amount']
-            RecipeIngredientAmount.objects.create(
-                recipe=instance,
-                ingredient_id=ingredient_id,
-                amount=amount
-            )
-        instance.tags.set(tags)
         return instance
 
     def to_representation(self, instance):
