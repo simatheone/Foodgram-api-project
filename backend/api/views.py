@@ -3,7 +3,7 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from rest_framework import generics, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from foodgram.settings import SHOPPING_CART_FILENAME
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import CustomUser, Subscription
-
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAdminOrReadOnly, IsOwnerAdminOrReadOnly
 from .serializers import (CustomUserReadSerializer,
@@ -22,12 +21,12 @@ from .serializers import (CustomUserReadSerializer,
                           TagSerializer)
 from .utils import create_pdf_shopping_cart
 
-SELF_FOLLOWING_ERROR = 'Пользователь не может подписаться сам на себя.'
-DOUBLE_FOLLOWING_ERROR = 'Нельзя дважды подписаться на одного юзера.'
-DOUBLE_FAVORITE_ERROR = 'Нельзя дважды добавить рецепт в избранное.'
-DOUBLE_SHOPPING_ERROR = 'Нельзя добавить в покупки два одинаковых рецепта.'
-FAVORITE_DELETION_ERROR = 'Рецепт уже удален из списка избранного.'
 CART_DELETION_ERROR = 'Рецепт уже удален из списка покупок.'
+DELETION_ERROR = 'Рецепт уже удален из списка.'
+DOUBLE_ADD_ERROR = 'Рецепт нельзя добавить дважды.'
+DELETE_SUB_ERROR = 'Подписка уже удалена либо не была ранее создана.'
+DOUBLE_FOLLOWING_ERROR = 'Нельзя дважды подписаться на одного юзера.'
+SELF_FOLLOWING_ERROR = 'Пользователь не может подписаться сам на себя.'
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -124,50 +123,47 @@ class CustomUserViewSet(UserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-
-class SubscribeAPIView(generics.ListCreateAPIView,
-                       generics.DestroyAPIView):
-    """
-    APIView for Subscription model.
-    Allowed request methods: POST, DELETE.
-    Permissions: Authenticated users.
-    """
-    serializer_class = SubscriptionSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        author_id = self.kwargs['user_id']
-        return get_object_or_404(CustomUser, pk=author_id)
-
-    def create(self, request, *args, **kwargs):
+    @action(
+        detail=True,
+        methods=('post', 'delete'),
+        permission_classes=(IsAuthenticated,),
+        url_name='subscribe'
+    )
+    def subscribe(self, request, id):
+        """
+        Additional method for the endpoint:
+            api/users/<user_id>/subscribe/
+        Allowed request methods: POST, DELETE.
+        Permissions: Authenticated users.
+        """
         user = request.user
-        author_obj = self.get_queryset()
-        if user == author_obj:
-            return Response(
-                {'message': SELF_FOLLOWING_ERROR},
-                status=status.HTTP_400_BAD_REQUEST
+        author = get_object_or_404(CustomUser, pk=id)
+        subscription = user.sub_user.filter(author=author)
+        if request.method == 'POST':
+            if user == author:
+                return Response(
+                    {'message': SELF_FOLLOWING_ERROR},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if subscription.exists():
+                return Response(
+                    {'message': DOUBLE_FOLLOWING_ERROR},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = SubscriptionSerializer(
+                author, context={'request': request}
             )
-        if user.sub_user.filter(author=author_obj).exists():
-            return Response(
-                {'message': DOUBLE_FOLLOWING_ERROR},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        subscription = Subscription.objects.create(
-            user=user, author=author_obj
-        )
-        serializer = self.get_serializer(
-            subscription, context={'request': request}
-        )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            Subscription.objects.create(user=user, author=author)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, user_id=None):
-        user = self.request.user
-        author = get_object_or_404(CustomUser, pk=user_id)
-        subscription = Subscription.objects.filter(author=author, user=user)
-        if not subscription:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        subscription.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if request.method == 'DELETE':
+            if not subscription:
+                return Response(
+                    {'message': DELETE_SUB_ERROR},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -200,6 +196,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
+    def favorite_or_shopping_cart(self, model, pk, request):
+        """
+        Method which creates/deletes object depends on model
+        has been given to it.
+        Works with models: Favorite, ShoppingCart.
+        """
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        queryset = model.objects.filter(user=user, recipe=recipe)
+        if request.method == 'POST':
+            if queryset.exists():
+                return Response(
+                    {'message': DOUBLE_ADD_ERROR},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = ShortRecipeSerializer(
+                recipe,
+                context={'request': request}
+            )
+            model.objects.create(user=user, recipe=recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            if not queryset:
+                return Response(
+                    {'message': DELETION_ERROR},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            queryset.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=False,
         permission_classes=(IsAuthenticated,),
@@ -221,92 +248,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
             filename=filename
         )
 
-
-class FavoriteAPIView(generics.CreateAPIView,
-                      generics.DestroyAPIView):
-    """
-    ApiView for Favorite model.
-    Allowed request methods: POST, DELETE.
-    Permissions: Authenticated users.
-    """
-    serializer_class = ShortRecipeSerializer
-    permission_classes = (IsAuthenticated,)
-    pagination_class = None
-
-    def get_queryset(self):
-        recipe_id = self.kwargs['recipe_id']
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
-
-    def post(self, request, *args, **kwargs):
-        recipe_obj = self.get_queryset()
-        user = request.user
-        if Favorite.objects.filter(user=user, recipe=recipe_obj).exists():
-            return Response(
-                {'message': DOUBLE_FAVORITE_ERROR},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = self.get_serializer(
-            recipe_obj, context={'request': request}
+    @action(
+        detail=True,
+        methods=('post', 'delete'),
+        permission_classes=(IsAuthenticated,),
+        url_name='favorite'
+    )
+    def favorite(self, request, pk):
+        """
+        Additional method for the endpoint:
+            api/recipes/<recipe_id>/favorite/
+        Allowed request methods: POST, DELETE.
+        Permissions: Authenticated users.
+        """
+        model = Favorite
+        return self.favorite_or_shopping_cart(
+            model, pk, request
         )
-        Favorite.objects.create(user=user, recipe=recipe_obj)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
-        user = request.user
-        recipe_obj = self.get_queryset()
-        favorite = Favorite.objects.filter(user=user, recipe=recipe_obj)
-        if not favorite:
-            return Response(
-                {'message': FAVORITE_DELETION_ERROR},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        favorite.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ShoppingCartAPIView(generics.CreateAPIView,
-                          generics.DestroyAPIView):
-    """
-    APIView for ShoppingCart model.
-    Allowed request methods: POST, DELETE.
-    Permissions: Authenticated users.
-    """
-    serializer_class = ShortRecipeSerializer
-    permission_classes = (IsAuthenticated,)
-    pagination_class = None
-
-    def get_queryset(self):
-        recipe_id = self.kwargs['recipe_id']
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
-
-    def post(self, request, *args, **kwargs):
-        recipe_obj = self.get_queryset()
-        user = request.user
-        if ShoppingCart.objects.filter(user=user, recipe=recipe_obj).exists():
-            return Response(
-                {'message': DOUBLE_SHOPPING_ERROR},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = self.get_serializer(recipe_obj)
-        ShoppingCart.objects.create(user=user, recipe=recipe_obj)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete(self, request, *args, **kwargs):
-        user = request.user
-        recipe_obj = self.get_queryset()
-        shopping_cart = ShoppingCart.objects.filter(
-            user=user, recipe=recipe_obj
+    @action(
+        detail=True,
+        methods=('post', 'delete'),
+        permission_classes=(IsAuthenticated,),
+        url_name='shopping_cart'
+    )
+    def shopping_cart(self, request, pk):
+        """
+        Additional method for the endpoint:
+            api/recipes/<recipe_id>/shopping_cart/
+        Allowed request methods: POST, DELETE.
+        Permissions: Authenticated users.
+        """
+        model = ShoppingCart
+        return self.favorite_or_shopping_cart(
+            model, pk, request
         )
-        if not shopping_cart:
-            return Response(
-                {'message': CART_DELETION_ERROR},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        shopping_cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
