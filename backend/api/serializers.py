@@ -6,7 +6,7 @@ from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import Ingredient, Recipe, RecipeIngredientAmount, Tag
-from users.models import CustomUser, Subscription
+from users.models import CustomUser
 
 
 class IsSubscribedMethod:
@@ -368,17 +368,12 @@ class SubscriptionSerializer(serializers.ModelSerializer,
                              IsSubscribedMethod):
     """
     Serializer for Subscription.
-    Uses model: Subscription.
+    Uses model: CustomUser.
     Serializes/deserializes fileds of CustomUser:
     email, id, username, first_name, last_name
     + additional method fields:
         is_subscribed, recipes, recipes_count
     """
-    email = serializers.ReadOnlyField(source='author.email')
-    id = serializers.ReadOnlyField(source='author.id')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField(
         read_only=True
     )
@@ -386,7 +381,7 @@ class SubscriptionSerializer(serializers.ModelSerializer,
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Subscription
+        model = CustomUser
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count')
@@ -399,9 +394,9 @@ class SubscriptionSerializer(serializers.ModelSerializer,
         request = self.context['request']
         recipe_limit = request.GET.get('recipes_limit')
         if recipe_limit:
-            recipes = obj.author.recipe.all()[:int(recipe_limit)]
+            recipes = obj.recipe.all()[:int(recipe_limit)]
         else:
-            recipes = obj.author.recipe.all()
+            recipes = obj.recipe.all()
         serializer = ShortRecipeSerializer(
             recipes, many=True, context={'request': request}
         )
@@ -411,7 +406,7 @@ class SubscriptionSerializer(serializers.ModelSerializer,
         """
         Method returns the number of the author's recipes.
         """
-        results = Recipe.objects.filter(author=obj.author).aggregate(
+        results = Recipe.objects.filter(author=obj).aggregate(
             count_recipes=Count('name')
         )
         return results['count_recipes']
