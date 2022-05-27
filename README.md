@@ -1,10 +1,10 @@
 # Foodgram Project [![foodgram_workflow](https://github.com/Simatheone/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/Simatheone/foodgram-project-react/actions/workflows/yamdb_workflow.yml)
 
 ## Оглавление
-- [Технологии](#tech)
-- [Описание проекта](#about-project)
-- [Заполнение .env файла](#fill-env)
-- [Запуск проекта](#run-project)
+- [Технологии](#используемые-технологии)
+- [Описание проекта](#описание-проекта)
+- [Заполнение .env файла](#заполнение-env-файла)
+- [Запуск проекта](#запуск-проекта)
 <br>
 
 Проект можно посмотреть тут [foodgram](http://foodfoodgram.sytes.net/).
@@ -15,20 +15,20 @@ login: admin@admin.ru
 password: admin
 ```
 
-## [Используемые технологии](#tech)
+## Используемые технологии
 
 :snake: Python 3.8, :desktop_computer: Django 4.0.4, :arrows_counterclockwise: Django Rest Framework 3.13.1, 
 
 :ship: Docker 3.8, :paintbrush: Nginx 1.21.3, :books: Postgres 13.0, :cloud: YandexCloud (server) 
 <hr>
 
-## [Описание проекта](#about-project)
+## Описание проекта
 Приложение «Продуктовый помощник»: сайт, на котором пользователи могут публиковать рецепты, добавлять чужие рецепты в избранное и подписываться на публикации понравившихся авторов.
 
 Сервис «Список покупок» позволит пользователям создавать список продуктов, которые нужно купить для приготовления выбранных блюд.
 <hr>
 
-## [Заполнение .env файла](#fill-env)
+## Заполнение .env файла
 В директории infra/ создайте .env файл и укажите значения для переменных окружения:
 
 - SECRET_KEY
@@ -45,7 +45,7 @@ password: admin
 Подсказки по заполнению .env файла можно найти в файлах infra/env.example и infra/env.template.
 <hr>
 
-## [Запуск проекта](#run-project)
+## Запуск проекта
 ### Для запуска проекта на локальной машине
 Необходимо установить Docker на свою рабочую машину. Инструкцию можно найти на [оффициальном сайте](https://docs.docker.com/get-docker/) по Docker.
 
