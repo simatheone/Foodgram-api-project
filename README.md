@@ -1,31 +1,34 @@
 # Foodgram Project [![foodgram_workflow](https://github.com/Simatheone/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/Simatheone/foodgram-project-react/actions/workflows/yamdb_workflow.yml)
 
+## Оглавление
 - [Технологии](#tech)
 - [Описание проекта](#about-project)
 - [Заполнение .env файла](#fill-env)
 - [Запуск проекта](#run-project)
 <br>
 
-Проект можно посмотреть [тут foodgram](http://foodfoodgram.sytes.net/).
+Проект можно посмотреть тут [foodgram](http://foodfoodgram.sytes.net/).
 
 Для входа под админом: 
-- login: admin@admin.ru
-- password: admin
-<br>
-<br>
+```
+login: admin@admin.ru
+password: admin
+```
 
-## <a name="tech">Используемые технологии</a>
+## [Используемые технологии](#tech)
 
-:snake: Python 3.8, :desktop_computer: Django 4.0.4, :arrows_counterclockwise: Django Rest Framework	3.13.1, :ship: Docker 3.8, :paintbrush: Nginx, :books: Postgres, :cloud: YandexCloud(server) 
+:snake: Python 3.8, :desktop_computer: Django 4.0.4, :arrows_counterclockwise: Django Rest Framework 3.13.1, 
+
+:ship: Docker 3.8, :paintbrush: Nginx 1.21.3, :books: Postgres 13.0, :cloud: YandexCloud (server) 
 <hr>
 
-## <a name="about-project">Описание проекта</a>
+## [Описание проекта](#about-project)
 Приложение «Продуктовый помощник»: сайт, на котором пользователи могут публиковать рецепты, добавлять чужие рецепты в избранное и подписываться на публикации понравившихся авторов.
 
 Сервис «Список покупок» позволит пользователям создавать список продуктов, которые нужно купить для приготовления выбранных блюд.
 <hr>
 
-## <a name="fill-env">Заполнение .env файла</a>
+## [Заполнение .env файла](#fill-env)
 В директории infra/ создайте .env файл и укажите значения для переменных окружения:
 
 - SECRET_KEY
@@ -42,7 +45,7 @@
 Подсказки по заполнению .env файла можно найти в файлах infra/env.example и infra/env.template.
 <hr>
 
-## <a name="run-project">Запуск проекта</a>
+## [Запуск проекта](#run-project)
 ### Для запуска проекта на локальной машине
 Необходимо установить Docker на свою рабочую машину. Инструкцию можно найти на [оффициальном сайте](https://docs.docker.com/get-docker/) по Docker.
 
