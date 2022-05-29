@@ -94,7 +94,7 @@ scp nginx.conf <username>@<server_ip>:/home/<username>/
 ```bash
 touch .env
 ```
-4. Запустить проект командой (пример для Ubuntu):
+4. Запустить проект командой:
 
 ```bash
 sudo docker-compose up -d
