@@ -38,5 +38,10 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://web:8000/"
+  "proxy": "http://web:8000/",
+  "overrides": {
+    "semver": "^7.5.2",
+    "word-wrap": "^1.2.4",
+    "tough-cookie": "^4.1.3"
+  }
 }
