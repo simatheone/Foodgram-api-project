@@ -55,9 +55,9 @@ def create_pdf_shopping_cart(user):
         pdf_page.save()
         buffer.seek(0)
         return buffer
-    else:
-        pdf_page.drawCentredString(315, 425, EMPTY_CART_TITLE)
-        pdf_page.showPage()
-        pdf_page.save()
-        buffer.seek(0)
-        return buffer
+
+    pdf_page.drawCentredString(315, 425, EMPTY_CART_TITLE)
+    pdf_page.showPage()
+    pdf_page.save()
+    buffer.seek(0)
+    return buffer
